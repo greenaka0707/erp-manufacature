@@ -26,12 +26,16 @@ export const salesOrderSchema = z.object({
 
 export type SalesOrderFormValues = z.infer<typeof salesOrderSchema>;
 
+export interface SalesOrderItemPayload {
+  product_id: string;
+  qty: number;
+  unit_price: number;
+  discount_amount?: number;
+}
+
 export interface SalesOrderPayload {
   customer_id: string;
-
   order_date: string;
-
   notes?: string;
-
   items: SalesOrderItemPayload[];
 }
