@@ -142,7 +142,7 @@ export const sidebarMenu = [
       },
       {
         title: "Accounts Receivable",
-        path: "/finance/ar",
+        path: "/sales/accounts-receivable", // Diarahkan ke rute yang sama agar sinkron
       },
       {
         title: "Accounts Payable",

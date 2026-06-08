@@ -41,22 +41,23 @@ export async function getInvoices(companyId: string) {
 }
 
 // Invoice Detail
-// Contoh
 export async function getInvoiceById(companyId: string, invoiceId: string) {
   const { data, error } = await supabase
     .from("sales_invoices")
     .select(
       `
       *,
-      customer:customers!fk_sales_invoices_customer(id,name,phone,address),
-      sales_order:sales_orders(id,so_number),
-      delivery_order:delivery_orders!fk_sales_invoices_delivery_order(
-        id,
-        do_number
-      ),
-      invoice_items:sales_invoice_items_sales_invoice_id_fkey(
+      customer:customers(*),
+      sales_order:sales_orders(*),
+      delivery_order:delivery_orders(*),
+
+     allocations:customer_payment_allocations!fk_sales_invoice(
+  allocated_amount
+),
+
+      invoice_items:sales_invoice_items!fk_sales_invoice(
         *,
-        product:products(id,name,sku,unit_id)
+        product:products(*)
       )
     `,
     )
@@ -64,7 +65,11 @@ export async function getInvoiceById(companyId: string, invoiceId: string) {
     .eq("id", invoiceId)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error("Error di Supabase Query:", error);
+    throw error;
+  }
+
   return data;
 }
 

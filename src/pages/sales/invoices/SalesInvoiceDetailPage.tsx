@@ -68,16 +68,24 @@ export default function SalesInvoiceDetailPage() {
         <button className="rounded-lg border px-4 py-2 hover:bg-gray-50" onClick={() => navigate("/sales/invoices")}>
           Back
         </button>
+
         <div className="space-x-2">
           {invoice.status === "DRAFT" && (
             <>
               <button className="rounded-lg bg-green-600 px-4 py-2 text-white disabled:opacity-50" onClick={handlePost} disabled={processing}>
                 {processing ? "Processing..." : "Post Invoice"}
               </button>
+
               <button className="rounded-lg bg-red-600 px-4 py-2 text-white disabled:opacity-50" onClick={handleCancel} disabled={processing}>
                 {processing ? "Processing..." : "Cancel"}
               </button>
             </>
+          )}
+
+          {invoice.status === "POSTED" && (
+            <button className="rounded-lg bg-blue-600 px-4 py-2 text-white" onClick={() => navigate(`/sales/payments/create/${invoice.id}`)}>
+              Record Payment
+            </button>
           )}
         </div>
       </div>

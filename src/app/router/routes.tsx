@@ -67,6 +67,8 @@ import InvoiceFormPage from "@/pages/sales/invoices/InvoiceFormPage";
 
 import CustomerPaymentsPage from "@/pages/sales/payments/CustomerPaymentsPage";
 import CustomerPaymentDetailPage from "@/pages/sales/payments/CustomerPaymentDetailPage";
+import CustomerPaymentFormPage from "@/pages/sales/payments/CustomerPaymentFormPage";
+import AccountsReceivablePage from "@/pages/sales/receivables/AccountsReceivablePage";
 
 export const routes: RouteObject[] = [
   {
@@ -308,14 +310,31 @@ export const routes: RouteObject[] = [
         element: <SalesInvoiceDetailPage />,
       },
 
-      // Customer Payments
+      // ==========================================
+      // GANTI BAGIAN INI DI FILE ROUTES KAMU
+      // ==========================================
+
+      // Customer Payments (Daftar Riwayat Pembayaran)
       {
         path: "sales/payments",
         element: <CustomerPaymentsPage />,
       },
+
+      // PERBAIKAN 1: Tambahkan parameter /:id agar menangkap ID invoice yang dikirim dari list piutang
+      {
+        path: "sales/payments/create/:invoiceId",
+        element: <CustomerPaymentFormPage />,
+      },
+
       {
         path: "sales/payments/:id",
         element: <CustomerPaymentDetailPage />,
+      },
+
+      // PERBAIKAN 2: Ubah path menjadi "sales/accounts-receivable" agar sinkron dengan menu sidebar kamu
+      {
+        path: "sales/accounts-receivable",
+        element: <AccountsReceivablePage />,
       },
     ],
   },
