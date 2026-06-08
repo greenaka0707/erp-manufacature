@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 import PageHeader from "@/components/cards/PageHeader";
 import Loading from "@/components/ui/loading";
 import EmptyState from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 
 import { useCompanyStore } from "@/stores/companyStore";
 
 import { getAccountsReceivable } from "@/services/accounts-receivable.service";
+import { exportAccountsReceivablePdf } from "@/utils/exportPdf";
 
 export default function AccountsReceivablePage() {
   const navigate = useNavigate();
@@ -15,10 +17,34 @@ export default function AccountsReceivablePage() {
   const companyId = useCompanyStore((state) => state.currentCompany?.id);
 
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [invoices, setInvoices] = useState<any[]>([]);
+  const totalOutstanding = invoices.reduce((sum, invoice) => {
+    const paid = invoice.allocations?.reduce((s: number, item: any) => s + Number(item.allocated_amount || 0), 0) || 0;
+
+    return sum + (Number(invoice.grand_total || 0) - paid);
+  }, 0);
+
+  const totalInvoice = invoices.length;
+
+  const totalCustomer = new Set(invoices.map((x) => x.customer?.id)).size;
+
+  const totalPaid = invoices.reduce((sum, invoice) => {
+    const paid = invoice.allocations?.reduce((s: number, item: any) => s + Number(item.allocated_amount || 0), 0) || 0;
+
+    return sum + paid;
+  }, 0);
+
+  const filteredInvoices = invoices.filter((invoice) => {
+    const keyword = search.toLowerCase();
+
+    const invoiceNumber = invoice.invoice_number?.toLowerCase() || "";
+    const customerName = invoice.customer?.name?.toLowerCase() || "";
+
+    return invoiceNumber.includes(keyword) || customerName.includes(keyword);
+  });
 
   useEffect(() => {
-    console.log("Current companyId:", companyId); // Cek di console nilainya muncul atau tidak
     if (companyId) {
       loadData();
     } else {
@@ -34,12 +60,15 @@ export default function AccountsReceivablePage() {
       const data = await getAccountsReceivable(companyId!);
 
       // TAMBAHKAN BARIS INI UNTUK INSPEKSI DATA
-      console.log("=== DATA PIUTANG ===", data);
 
       setInvoices(data);
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleExportPdf() {
+    exportAccountsReceivablePdf(filteredInvoices);
   }
 
   if (loading) return <Loading />;
@@ -48,7 +77,39 @@ export default function AccountsReceivablePage() {
     <div className="space-y-6">
       <PageHeader title="Accounts Receivable" description="Manage customer receivables" />
 
-      {invoices.length === 0 ? (
+      {/* SUMMARY */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <div className="rounded-xl border bg-white p-4">
+          <p className="text-sm text-muted-foreground">Total Outstanding</p>
+          <p className="text-2xl font-bold">Rp {totalOutstanding.toLocaleString("id-ID")}</p>
+        </div>
+
+        <div className="rounded-xl border bg-white p-4">
+          <p className="text-sm text-muted-foreground">Total Invoice</p>
+          <p className="text-2xl font-bold">{totalInvoice}</p>
+        </div>
+
+        <div className="rounded-xl border bg-white p-4">
+          <p className="text-sm text-muted-foreground">Total Customer</p>
+          <p className="text-2xl font-bold">{totalCustomer}</p>
+        </div>
+
+        <div className="rounded-xl border bg-white p-4">
+          <p className="text-sm text-muted-foreground">Total Paid</p>
+          <p className="text-2xl font-bold">Rp {totalPaid.toLocaleString("id-ID")}</p>
+        </div>
+      </div>
+
+      {/* SEARCH */}
+      <div className="flex items-center justify-between">
+        <Input placeholder="Search Invoice / Customer..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-md" />
+
+        <button onClick={handleExportPdf} className="rounded-lg border px-4 py-2">
+          Export PDF
+        </button>
+      </div>
+
+      {filteredInvoices.length === 0 ? (
         <EmptyState title="No Receivables" description="No outstanding invoices" />
       ) : (
         <div className="overflow-hidden rounded-xl border bg-white">
@@ -70,7 +131,7 @@ export default function AccountsReceivablePage() {
             </thead>
 
             <tbody>
-              {invoices.map((invoice) => {
+              {filteredInvoices.map((invoice) => {
                 const paid = invoice.allocations?.reduce((sum: number, item: any) => sum + Number(item.allocated_amount || 0), 0) || 0;
 
                 const outstanding = Number(invoice.grand_total || 0) - paid;
@@ -80,9 +141,6 @@ export default function AccountsReceivablePage() {
                     key={invoice.id}
                     className="cursor-pointer border-b hover:bg-slate-50"
                     onClick={() => {
-                      console.log("Invoice clicked:", invoice);
-                      console.log("Invoice ID:", invoice.id);
-
                       navigate(`/sales/payments/create/${invoice.id}`);
                     }}
                   >

@@ -70,6 +70,8 @@ import CustomerPaymentDetailPage from "@/pages/sales/payments/CustomerPaymentDet
 import CustomerPaymentFormPage from "@/pages/sales/payments/CustomerPaymentFormPage";
 import AccountsReceivablePage from "@/pages/sales/receivables/AccountsReceivablePage";
 
+import CashBankPage from "@/pages/finance/cash-bank/CashBankPage";
+
 export const routes: RouteObject[] = [
   {
     path: "/login",
@@ -175,17 +177,17 @@ export const routes: RouteObject[] = [
       },
 
       {
-        path: "purchasing/accounts-payable",
+        path: "finance/accounts-payable",
         element: <AccountsPayablePage />,
       },
 
       {
-        path: "purchasing/accounts-payable/:id/payment",
+        path: "finance/accounts-payable/:id/payment",
         element: <SupplierPaymentFormPage />,
       },
 
       {
-        path: "purchasing/accounts-payable/:id",
+        path: "finance/accounts-payable/:id",
         element: <AccountsPayableDetailPage />,
       },
 
@@ -335,6 +337,11 @@ export const routes: RouteObject[] = [
       {
         path: "sales/accounts-receivable",
         element: <AccountsReceivablePage />,
+      },
+
+      {
+        path: "finance/cash-bank",
+        element: <CashBankPage />,
       },
     ],
   },
