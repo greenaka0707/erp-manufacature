@@ -79,15 +79,22 @@ export async function createCustomerPayment(payload: CreateCustomerPaymentInput)
 
   const paidAmount = allocations?.reduce((sum, row) => sum + Number(row.allocated_amount || 0), 0) || 0;
 
-  let status = "UNPAID";
+ let paymentStatus = "UNPAID";
 
-  if (paidAmount >= Number(invoice.grand_total)) {
-    status = "PAID";
-  } else if (paidAmount > 0) {
-    status = "PARTIAL";
-  }
+if (paidAmount >= Number(invoice.grand_total)) {
+  paymentStatus = "PAID";
+} else if (paidAmount > 0) {
+  paymentStatus = "PARTIAL";
+}
 
-  const { error: updateError } = await supabase.from("sales_invoices").update({ status }).eq("id", payload.sales_invoice_id);
+const { error: updateError } = await supabase
+  .from("sales_invoices")
+  .update({
+    payment_status: paymentStatus,
+  })
+  .eq("id", payload.sales_invoice_id);
+
+if (updateError) throw updateError;
 
   if (updateError) throw updateError;
 
