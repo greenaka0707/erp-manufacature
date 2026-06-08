@@ -71,6 +71,8 @@ import CustomerPaymentFormPage from "@/pages/sales/payments/CustomerPaymentFormP
 import AccountsReceivablePage from "@/pages/sales/receivables/AccountsReceivablePage";
 
 import CashBankPage from "@/pages/finance/cash-bank/CashBankPage";
+import CashBankFormPage from "@/pages/finance/cash-bank/CashBankFormPage";
+import CashBankDetailPage from "@/pages/finance/cash-bank/CashBankDetailPage";
 
 export const routes: RouteObject[] = [
   {
@@ -342,6 +344,16 @@ export const routes: RouteObject[] = [
       {
         path: "finance/cash-bank",
         element: <CashBankPage />,
+      },
+
+      {
+        path: "finance/cash-bank/create",
+        element: <CashBankFormPage />,
+      },
+
+      {
+        path: "finance/cash-bank/:id",
+        element: <CashBankDetailPage />,
       },
     ],
   },

@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 
+import PrimaryButton from "@/components/ui/PrimaryButton";
+import { useNavigate } from "react-router-dom";
+
 import PageHeader from "@/components/cards/PageHeader";
 import Loading from "@/components/ui/loading";
+
+import { Input } from "@/components/ui/input";
 
 import { useCompanyStore } from "@/stores/companyStore";
 
@@ -9,6 +14,9 @@ import { getCashAccounts } from "@/services/cash-account.service";
 
 export default function CashBankPage() {
   const companyId = useCompanyStore((state) => state.currentCompany?.id);
+
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -34,6 +42,11 @@ export default function CashBankPage() {
   if (loading) return <Loading />;
 
   const totalBalance = accounts.reduce((sum, acc) => sum + Number(acc.balance || 0), 0);
+  const filteredAccounts = accounts.filter((account) => {
+    const keyword = search.toLowerCase();
+
+    return account.code?.toLowerCase().includes(keyword) || account.name?.toLowerCase().includes(keyword);
+  });
 
   return (
     <div className="space-y-6">
@@ -60,6 +73,14 @@ export default function CashBankPage() {
         </div>
       </div>
 
+      <div className="flex justify-end">
+        <PrimaryButton onClick={() => navigate("/finance/cash-bank/create")}>Create Account</PrimaryButton>
+      </div>
+
+      <div className="flex justify-between">
+        <Input placeholder="Search Account..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-md" />
+      </div>
+
       {/* Table */}
       <div className="overflow-hidden rounded-xl border bg-white">
         <table className="w-full">
@@ -73,8 +94,8 @@ export default function CashBankPage() {
           </thead>
 
           <tbody>
-            {accounts.map((account) => (
-              <tr key={account.id} className="border-b">
+            {filteredAccounts.map((account) => (
+              <tr key={account.id} className="cursor-pointer hover:bg-slate-50" onClick={() => navigate(`/finance/cash-bank/${account.id}`)}>
                 <td className="p-3">{account.code}</td>
 
                 <td className="p-3">{account.name}</td>
