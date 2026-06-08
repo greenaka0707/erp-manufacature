@@ -7,6 +7,7 @@ interface CreateCustomerPaymentInput {
   payment_number: string;
   payment_date: string;
   payment_method: string;
+  cash_account_id: string;
   reference_number?: string;
   amount: number;
   notes?: string;
@@ -26,21 +27,25 @@ export async function generateCustomerPaymentNumber(companyId: string) {
 export async function createCustomerPayment(payload: CreateCustomerPaymentInput) {
   // VALIDASI DULU
 
-  const { data: invoice, error: invoiceError } = await supabase.from("sales_invoices").select("id, grand_total, status").eq("id", payload.sales_invoice_id).single();
+  const { data: invoice, error: invoiceError } = await supabase
+  .from("sales_invoices")
+  .select("id, grand_total, status, payment_status")
+  .eq("id", payload.sales_invoice_id)
+  .single();
 
   if (invoiceError) throw invoiceError;
 
-  if (invoice.status === "PAID") {
-    throw new Error("Invoice sudah PAID");
-  }
+  if (invoice.payment_status === "PAID") {
+  throw new Error("Invoice sudah PAID");
+}
 
-  if (invoice.status === "CANCELLED") {
-    throw new Error("Invoice sudah dibatalkan");
-  }
+if (invoice.status === "CANCELLED") {
+  throw new Error("Invoice sudah dibatalkan");
+}
 
-  if (invoice.status === "DRAFT") {
-    throw new Error("Invoice belum diposting");
-  }
+if (invoice.status === "DRAFT") {
+  throw new Error("Invoice belum diposting");
+}
 
   const { data: existingAllocations } = await supabase.from("customer_payment_allocations").select("allocated_amount").eq("sales_invoice_id", payload.sales_invoice_id);
 
@@ -95,8 +100,6 @@ const { error: updateError } = await supabase
   .eq("id", payload.sales_invoice_id);
 
 if (updateError) throw updateError;
-
-  if (updateError) throw updateError;
 
   return payment;
 }
