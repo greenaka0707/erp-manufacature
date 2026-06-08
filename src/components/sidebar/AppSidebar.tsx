@@ -11,12 +11,12 @@ export default function AppSidebar() {
   return (
     <>
       {/* Mobile Button - Diperbaiki agar tidak nabrak text navbar jika ada */}
-      <button onClick={() => setOpen(true)} className="fixed left-4 top-3.5 z-40 rounded-lg border bg-white p-2 md:hidden shadow-sm">
+      <button onClick={() => setOpen(true)} className="fixed left-4 top-14 z-40 rounded-lg border bg-white p-2 md:hidden shadow-sm">
         <Menu size={20} />
       </button>
 
       {/* Overlay */}
-      {open && <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setOpen(false)} />}
+      {open && <div className="fixed inset-x-0 bottom-0 top-16 z-40 bg-black/50 md:hidden" onClick={() => setOpen(false)} />}
 
       {/* Sidebar */}
       <aside
@@ -40,9 +40,8 @@ export default function AppSidebar() {
         <div className="flex-1 space-y-1 overflow-y-auto p-3">
           {sidebarMenu.map((menu) => {
             if (menu.children) {
-              return <SidebarGroup key={menu.title} title={menu.title} icon={menu.icon} childrenItems={menu.children} />;
+              return <SidebarGroup key={menu.title} title={menu.title} icon={menu.icon} childrenItems={menu.children} onItemClick={() => setOpen(false)} />;
             }
-
             const Icon = menu.icon;
 
             return (
