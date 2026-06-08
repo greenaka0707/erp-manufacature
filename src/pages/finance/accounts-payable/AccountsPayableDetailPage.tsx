@@ -86,7 +86,16 @@ export default function AccountsPayableDetailPage() {
 
       <div className="flex justify-end">
         {outstanding > 0 && (
-          <button onClick={() => navigate(`/purchasing/accounts-payable/${invoice.id}/payment`)} className="rounded-lg bg-black px-4 py-2 text-white">
+          <button
+            onClick={() => {
+              const url = `/finance/accounts-payable/${invoice.id}/payment`;
+
+              console.log("NAVIGATE TO =", url);
+
+              navigate(url);
+            }}
+            className="rounded-lg bg-black px-4 py-2 text-white"
+          >
             Record Payment
           </button>
         )}

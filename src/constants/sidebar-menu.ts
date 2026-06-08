@@ -28,10 +28,6 @@ export const sidebarMenu = [
         title: "Supplier Invoices",
         path: "/purchasing/supplier-invoices",
       },
-      {
-        title: "Accounts Payable",
-        path: "/purchasing/accounts-payable",
-      },
     ],
   },
 

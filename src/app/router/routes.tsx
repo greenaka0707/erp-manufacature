@@ -27,9 +27,9 @@ import SupplierInvoicesPage from "@/pages/purchasing/supplier-invoices/SupplierI
 import SupplierInvoiceFormPage from "@/pages/purchasing/supplier-invoices/SupplierInvoiceFormPage";
 import SupplierInvoiceDetailPage from "@/pages/purchasing/supplier-invoices/SupplierInvoiceDetailPage";
 
-import AccountsPayablePage from "@/pages/purchasing/accounts-payable/AccountsPayablePage";
-import AccountsPayableDetailPage from "@/pages/purchasing/accounts-payable/AccountsPayableDetailPage";
-import SupplierPaymentFormPage from "@/pages/purchasing/accounts-payable/SupplierPaymentFormPage";
+import AccountsPayablePage from "@/pages/finance/accounts-payable/AccountsPayablePage";
+import AccountsPayableDetailPage from "@/pages/finance/accounts-payable/AccountsPayableDetailPage";
+import SupplierPaymentFormPage from "@/pages/finance/accounts-payable/SupplierPaymentFormPage";
 
 import InventoryBatchesPage from "@/pages/inventory/InventoryBatchesPage";
 import InventoryBatchDetailPage from "@/pages/inventory/InventoryBatchDetailPage";

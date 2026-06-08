@@ -11,10 +11,11 @@ export async function generateSupplierPaymentNumber(companyId: string) {
   return data;
 }
 
-export async function createSupplierPayment(payload: { company_id: string; supplier_invoice_id: string; payment_date: string; amount: number; payment_method: string; reference_number?: string; notes?: string }) {
+export async function createSupplierPayment(payload: { company_id: string; supplier_invoice_id: string; cash_account_id: string; payment_date: string; amount: number; payment_method: string; reference_number?: string; notes?: string }) {
   const { data, error } = await supabase.rpc("create_supplier_payment", {
     p_company_id: payload.company_id,
     p_supplier_invoice_id: payload.supplier_invoice_id,
+    p_cash_account_id: payload.cash_account_id,
     p_payment_date: payload.payment_date,
     p_amount: payload.amount,
     p_payment_method: payload.payment_method,

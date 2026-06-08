@@ -7,6 +7,7 @@ import Loading from "@/components/ui/loading";
 import { useCompanyStore } from "@/stores/companyStore";
 
 import { getAccountsPayableById } from "@/services/accounts-payable.service";
+import { getCashAccounts } from "@/services/cash-account.service";
 
 import { generateSupplierPaymentNumber, createSupplierPayment } from "@/services/supplier-payment.service";
 
@@ -33,6 +34,9 @@ export default function SupplierPaymentFormPage() {
 
   const [notes, setNotes] = useState("");
 
+  const [cashAccountId, setCashAccountId] = useState("");
+  const [cashAccounts, setCashAccounts] = useState<any[]>([]);
+
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -48,6 +52,9 @@ export default function SupplierPaymentFormPage() {
       const invoiceData = await getAccountsPayableById(id!);
 
       const paymentNo = await generateSupplierPaymentNumber(companyId!);
+
+      const accounts = await getCashAccounts(companyId!);
+      setCashAccounts(accounts);
 
       setInvoice(invoiceData);
 
@@ -80,9 +87,15 @@ export default function SupplierPaymentFormPage() {
 
       setSaving(true);
 
+      if (!cashAccountId) {
+        alert("Pilih rekening pembayaran");
+        return;
+      }
+
       await createSupplierPayment({
         company_id: companyId,
         supplier_invoice_id: invoice.id,
+        cash_account_id: cashAccountId,
         payment_date: paymentDate,
         payment_method: paymentMethod,
         reference_number: referenceNumber,
@@ -90,7 +103,7 @@ export default function SupplierPaymentFormPage() {
         notes,
       });
 
-      navigate(`/purchasing/accounts-payable/${invoice.id}`);
+      navigate(`/finance/accounts-payable/${invoice.id}`);
     } finally {
       setSaving(false);
     }
@@ -165,6 +178,20 @@ export default function SupplierPaymentFormPage() {
           </div>
 
           <div>
+            <label className="mb-1 block text-sm font-medium">Payment Account</label>
+
+            <select value={cashAccountId} onChange={(e) => setCashAccountId(e.target.value)} className="w-full rounded-lg border p-2">
+              <option value="">Select Account</option>
+
+              {cashAccounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label className="mb-1 block text-sm font-medium">Reference Number</label>
 
             <input value={referenceNumber} onChange={(e) => setReferenceNumber(e.target.value)} className="w-full rounded-lg border p-2" />
@@ -190,7 +217,7 @@ export default function SupplierPaymentFormPage() {
         </div>
 
         <div className="mt-6 flex justify-end gap-2">
-          <button onClick={() => navigate(`/purchasing/accounts-payable/${invoice.id}`)} className="rounded-lg border px-4 py-2">
+          <button onClick={() => navigate(`/finance/accounts-payable/${invoice.id}`)} className="rounded-lg border px-4 py-2">
             Cancel
           </button>
 

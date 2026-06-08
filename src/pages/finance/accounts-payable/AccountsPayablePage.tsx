@@ -170,7 +170,7 @@ export default function AccountsPayablePage() {
               {filteredItems.map((item) => (
                 <tr key={item.id} className="border-b hover:bg-gray-50">
                   <td className="p-4">
-                    <button onClick={() => navigate(`/purchasing/accounts-payable/${item.id}`)} className="font-medium text-blue-600 hover:underline">
+                    <button onClick={() => navigate(`/finance/accounts-payable/${item.id}`)} className="font-medium text-blue-600 hover:underline">
                       {item.invoice_number}
                     </button>
                   </td>
