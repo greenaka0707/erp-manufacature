@@ -47,6 +47,12 @@ if (invoice.status === "DRAFT") {
   throw new Error("Invoice belum diposting");
 }
 
+if (!payload.cash_account_id) {
+
+  throw new Error("Cash account wajib dipilih");
+
+}
+
   const { data: existingAllocations } = await supabase.from("customer_payment_allocations").select("allocated_amount").eq("sales_invoice_id", payload.sales_invoice_id);
 
   const alreadyPaid = existingAllocations?.reduce((sum, row) => sum + Number(row.allocated_amount || 0), 0) || 0;
@@ -100,6 +106,38 @@ const { error: updateError } = await supabase
   .eq("id", payload.sales_invoice_id);
 
 if (updateError) throw updateError;
+
+const { error: cashTxError } = await supabase
+  .from("cash_transactions")
+  .insert({
+    company_id: payload.company_id,
+    cash_account_id: payload.cash_account_id,
+    transaction_type: "CUSTOMER_PAYMENT",
+    transaction_date: payload.payment_date,
+    reference_type: "CUSTOMER_PAYMENT",
+    reference_id: payment.id,
+    amount: payload.amount,
+    description: `Pembayaran Customer ${payload.payment_number}`,
+  });
+
+if (cashTxError) throw cashTxError;
+
+const { data: account, error: accountError } = await supabase
+  .from("cash_accounts")
+  .select("balance")
+  .eq("id", payload.cash_account_id)
+  .single();
+
+if (accountError) throw accountError;
+
+const { error: balanceError } = await supabase
+  .from("cash_accounts")
+  .update({
+    balance: Number(account.balance || 0) + Number(payload.amount),
+  })
+  .eq("id", payload.cash_account_id);
+
+if (balanceError) throw balanceError;
 
   return payment;
 }
