@@ -31,6 +31,10 @@ export default function CustomerPaymentFormPage() {
 
   const [amount, setAmount] = useState("");
 
+  const [cashAccounts, setCashAccounts] = useState<any[]>([]);
+  
+  const [cashAccountId, setCashAccountId] = useState("");
+
   const [notes, setNotes] = useState("");
 
   const [saving, setSaving] = useState(false);
@@ -58,7 +62,19 @@ export default function CustomerPaymentFormPage() {
       // DI SINI
       console.log("Invoice ID dari route:", invoiceId);
       console.log("Company ID:", companyId);
-      const [invoiceData, paymentNo] = await Promise.all([getInvoiceById(companyId, invoiceId), generateCustomerPaymentNumber(companyId)]);
+      const [invoiceData, paymentNo, cashAccountData] = await Promise.all([
+  getInvoiceById(companyId, invoiceId),
+  generateCustomerPaymentNumber(companyId),
+  supabase
+    .from("cash_accounts")
+    .select("*")
+    .eq("company_id", companyId)
+    .eq("is_active", true),
+]);
+
+setInvoice(invoiceData);
+setPaymentNumber(paymentNo);
+setCashAccounts(cashAccountData.data || []);
 
       // DI SINI
       console.log("Invoice Data:", invoiceData);
@@ -87,6 +103,11 @@ export default function CustomerPaymentFormPage() {
         return;
       }
 
+if (!cashAccountId) {
+  alert("Pilih rekening kas/bank");
+  return;
+}
+
       if (paymentMethod !== "CASH" && !referenceNumber.trim()) {
         alert("Reference Number wajib diisi");
         return;
@@ -99,16 +120,17 @@ export default function CustomerPaymentFormPage() {
       console.log("AUTH USER:", user?.id);
 
       await createCustomerPayment({
-        company_id: companyId,
-        sales_order_id: invoice.sales_order_id,
-        sales_invoice_id: invoice.id,
-        payment_number: paymentNumber,
-        payment_date: paymentDate,
-        payment_method: paymentMethod,
-        reference_number: referenceNumber,
-        amount: Number(amount),
-        notes,
-      });
+  company_id: companyId,
+  sales_order_id: invoice.sales_order_id,
+  sales_invoice_id: invoice.id,
+  payment_number: paymentNumber,
+  payment_date: paymentDate,
+  payment_method: paymentMethod,
+  cash_account_id: cashAccountId,
+  reference_number: referenceNumber,
+  amount: Number(amount),
+  notes,
+});
 
       navigate("/sales/accounts-receivable");
     } catch (error: any) {
@@ -178,6 +200,25 @@ export default function CustomerPaymentFormPage() {
 
           <div>
             <label className="mb-1 block text-sm font-medium">Payment Method</label>
+            <div>
+  <label className="mb-1 block text-sm font-medium">
+    Cash / Bank Account
+  </label>
+
+  <select
+    value={cashAccountId}
+    onChange={(e) => setCashAccountId(e.target.value)}
+    className="w-full rounded-lg border p-2"
+  >
+    <option value="">Pilih Rekening</option>
+
+    {cashAccounts.map((acc) => (
+      <option key={acc.id} value={acc.id}>
+        {acc.code} - {acc.name}
+      </option>
+    ))}
+  </select>
+</div>
 
             <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full rounded-lg border p-2">
               <option value="CASH">Cash</option>
