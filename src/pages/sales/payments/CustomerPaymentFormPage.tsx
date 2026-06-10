@@ -7,6 +7,7 @@ import Loading from "@/components/ui/loading";
 
 import { useCompanyStore } from "@/stores/companyStore";
 import { getInvoiceById } from "@/services/invoice.service";
+import { getCashAccounts } from "@/services/cash-account.service";
 
 import { generateCustomerPaymentNumber, createCustomerPayment } from "@/services/customer-payment.service";
 
@@ -32,7 +33,7 @@ export default function CustomerPaymentFormPage() {
   const [amount, setAmount] = useState("");
 
   const [cashAccounts, setCashAccounts] = useState<any[]>([]);
-  
+
   const [cashAccountId, setCashAccountId] = useState("");
 
   const [notes, setNotes] = useState("");
@@ -60,31 +61,23 @@ export default function CustomerPaymentFormPage() {
       }
 
       // DI SINI
-      console.log("Invoice ID dari route:", invoiceId);
-      console.log("Company ID:", companyId);
-      const [invoiceData, paymentNo, cashAccountData] = await Promise.all([
-  getInvoiceById(companyId, invoiceId),
-  generateCustomerPaymentNumber(companyId),
-  supabase
-    .from("cash_accounts")
-    .select("*")
-    .eq("company_id", companyId)
-    .eq("is_active", true),
-]);
-
-setInvoice(invoiceData);
-setPaymentNumber(paymentNo);
-setCashAccounts(cashAccountData.data || []);
-
-      // DI SINI
-      console.log("Invoice Data:", invoiceData);
+      const [invoiceData, paymentNo, accounts] = await Promise.all([getInvoiceById(companyId, invoiceId), generateCustomerPaymentNumber(companyId), getCashAccounts(companyId)]);
 
       setInvoice(invoiceData);
       setPaymentNumber(paymentNo);
+      setCashAccounts(accounts);
+
+      if (accounts.length > 0) {
+        setCashAccountId(accounts[0].id);
+      }
+
+      // DI SINI
+      console.log("Invoice Data:", invoiceData);
     } finally {
       setLoading(false);
     }
   }
+
   async function handleSave() {
     if (saving) return;
 
@@ -103,10 +96,10 @@ setCashAccounts(cashAccountData.data || []);
         return;
       }
 
-if (!cashAccountId) {
-  alert("Pilih rekening kas/bank");
-  return;
-}
+      if (!cashAccountId) {
+        alert("Pilih rekening kas/bank");
+        return;
+      }
 
       if (paymentMethod !== "CASH" && !referenceNumber.trim()) {
         alert("Reference Number wajib diisi");
@@ -120,17 +113,17 @@ if (!cashAccountId) {
       console.log("AUTH USER:", user?.id);
 
       await createCustomerPayment({
-  company_id: companyId,
-  sales_order_id: invoice.sales_order_id,
-  sales_invoice_id: invoice.id,
-  payment_number: paymentNumber,
-  payment_date: paymentDate,
-  payment_method: paymentMethod,
-  cash_account_id: cashAccountId,
-  reference_number: referenceNumber,
-  amount: Number(amount),
-  notes,
-});
+        company_id: companyId,
+        sales_order_id: invoice.sales_order_id,
+        sales_invoice_id: invoice.id,
+        payment_number: paymentNumber,
+        payment_date: paymentDate,
+        payment_method: paymentMethod,
+        cash_account_id: cashAccountId,
+        reference_number: referenceNumber,
+        amount: Number(amount),
+        notes,
+      });
 
       navigate("/sales/accounts-receivable");
     } catch (error: any) {
@@ -160,25 +153,21 @@ if (!cashAccountId) {
       <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-xl border bg-white p-4">
           <p className="text-sm text-muted-foreground">Customer</p>
-
           <p className="font-medium">{invoice.customer?.name}</p>
         </div>
 
         <div className="rounded-xl border bg-white p-4">
           <p className="text-sm text-muted-foreground">Invoice Number</p>
-
           <p className="font-medium">{invoice.invoice_number}</p>
         </div>
 
         <div className="rounded-xl border bg-white p-4">
           <p className="text-sm text-muted-foreground">Grand Total</p>
-
           <p className="font-medium">Rp {Number(invoice.grand_total).toLocaleString("id-ID")}</p>
         </div>
 
         <div className="rounded-xl border bg-white p-4">
           <p className="text-sm text-muted-foreground">Outstanding</p>
-
           <p className="font-medium text-red-600">Rp {outstanding.toLocaleString("id-ID")}</p>
         </div>
       </div>
@@ -200,32 +189,25 @@ if (!cashAccountId) {
 
           <div>
             <label className="mb-1 block text-sm font-medium">Payment Method</label>
-            <div>
-  <label className="mb-1 block text-sm font-medium">
-    Cash / Bank Account
-  </label>
-
-  <select
-    value={cashAccountId}
-    onChange={(e) => setCashAccountId(e.target.value)}
-    className="w-full rounded-lg border p-2"
-  >
-    <option value="">Pilih Rekening</option>
-
-    {cashAccounts.map((acc) => (
-      <option key={acc.id} value={acc.id}>
-        {acc.code} - {acc.name}
-      </option>
-    ))}
-  </select>
-</div>
 
             <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full rounded-lg border p-2">
               <option value="CASH">Cash</option>
-
               <option value="BANK_TRANSFER">Bank Transfer</option>
-
               <option value="GIRO">Giro</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">Cash / Bank Account</label>
+
+            <select value={cashAccountId} onChange={(e) => setCashAccountId(e.target.value)} className="w-full rounded-lg border p-2">
+              <option value="">Pilih Rekening</option>
+
+              {cashAccounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.code} - {account.name}
+                </option>
+              ))}
             </select>
           </div>
 

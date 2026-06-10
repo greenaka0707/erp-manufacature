@@ -56,6 +56,9 @@ export default function CustomerPaymentsPage() {
               <tr className="border-b bg-slate-50">
                 <th className="p-3 text-left">Payment Number</th>
                 <th className="p-3 text-left">Payment Date</th>
+                <th className="p-3 text-left">Customer</th>
+                <th className="p-3 text-left">Invoice</th>
+                <th className="p-3 text-left">Cash / Bank</th>
                 <th className="p-3 text-right">Amount</th>
               </tr>
             </thead>
@@ -64,7 +67,15 @@ export default function CustomerPaymentsPage() {
               {payments.map((payment) => (
                 <tr key={payment.id} className="cursor-pointer border-b hover:bg-slate-50" onClick={() => navigate(`/sales/payments/${payment.id}`)}>
                   <td className="p-3">{payment.payment_number}</td>
+
                   <td className="p-3">{payment.payment_date}</td>
+
+                  <td className="p-3">{payment.invoice?.customer?.name ?? "-"}</td>
+
+                  <td className="p-3">{payment.invoice?.invoice_number ?? "-"}</td>
+
+                  <td className="p-3">{payment.account?.name ?? "-"}</td>
+
                   <td className="p-3 text-right">Rp {Number(payment.amount || 0).toLocaleString("id-ID")}</td>
                 </tr>
               ))}

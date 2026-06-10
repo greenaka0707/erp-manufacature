@@ -19,6 +19,8 @@ export default function AccountsReceivablePage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [invoices, setInvoices] = useState<any[]>([]);
+
+  const [filter, setFilter] = useState<"OUTSTANDING" | "PAID" | "ALL">("OUTSTANDING");
   const totalOutstanding = invoices.reduce((sum, invoice) => {
     const paid = invoice.allocations?.reduce((s: number, item: any) => s + Number(item.allocated_amount || 0), 0) || 0;
 
@@ -48,16 +50,15 @@ export default function AccountsReceivablePage() {
     if (companyId) {
       loadData();
     } else {
-      // Jika companyId tidak ada, matikan loading agar tidak stuck blank putih
       setLoading(false);
     }
-  }, [companyId]);
+  }, [companyId, filter]);
 
   async function loadData() {
     try {
       setLoading(true);
 
-      const data = await getAccountsReceivable(companyId!);
+      const data = await getAccountsReceivable(companyId!, filter);
 
       // TAMBAHKAN BARIS INI UNTUK INSPEKSI DATA
 
@@ -98,6 +99,20 @@ export default function AccountsReceivablePage() {
           <p className="text-sm text-muted-foreground">Total Paid</p>
           <p className="text-2xl font-bold">Rp {totalPaid.toLocaleString("id-ID")}</p>
         </div>
+      </div>
+
+      <div className="flex gap-2">
+        <button onClick={() => setFilter("OUTSTANDING")} className={`rounded-lg border px-4 py-2 ${filter === "OUTSTANDING" ? "bg-black text-white" : ""}`}>
+          Outstanding
+        </button>
+
+        <button onClick={() => setFilter("PAID")} className={`rounded-lg border px-4 py-2 ${filter === "PAID" ? "bg-black text-white" : ""}`}>
+          Paid
+        </button>
+
+        <button onClick={() => setFilter("ALL")} className={`rounded-lg border px-4 py-2 ${filter === "ALL" ? "bg-black text-white" : ""}`}>
+          All
+        </button>
       </div>
 
       {/* SEARCH */}
@@ -141,7 +156,9 @@ export default function AccountsReceivablePage() {
                     key={invoice.id}
                     className="cursor-pointer border-b hover:bg-slate-50"
                     onClick={() => {
-                      navigate(`/sales/payments/create/${invoice.id}`);
+                      if (invoice.status !== "PAID") {
+                        navigate(`/sales/payments/create/${invoice.id}`);
+                      }
                     }}
                   >
                     <td className="p-3">{invoice.invoice_number}</td>
