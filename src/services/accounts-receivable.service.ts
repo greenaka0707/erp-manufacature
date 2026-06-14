@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 
-export async function getAccountsReceivable(companyId: string, filter: "OUTSTANDING" | "PAID" | "ALL" = "OUTSTANDING") {
-  let query = supabase
+export async function getAccountsReceivable(companyId: string) {
+  const { data, error } = await supabase
     .from("sales_invoices")
     .select(
       `
@@ -12,21 +12,10 @@ export async function getAccountsReceivable(companyId: string, filter: "OUTSTAND
       )
     `,
     )
-    .eq("company_id", companyId);
-
-  if (filter === "OUTSTANDING") {
-    query = query.in("status", ["UNPAID", "PARTIAL"]);
-  }
-
-  if (filter === "PAID") {
-    query = query.eq("status", "PAID");
-  }
-
-  const { data, error } = await query.order("invoice_date", { ascending: false });
+    .eq("company_id", companyId)
+    .order("invoice_date", { ascending: false });
 
   if (error) throw error;
-
-  console.log("Hasil data piutang:", data);
 
   return data ?? [];
 }

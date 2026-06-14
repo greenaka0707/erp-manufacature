@@ -71,39 +71,19 @@ export const sidebarMenu = [
     ],
   },
 
-  // 4. Master Data
-  {
-    title: "Master Data",
-    icon: Database,
-    children: [
-      {
-        title: "Products",
-        path: "/master/products",
-      },
-      {
-        title: "Suppliers",
-        path: "/master/suppliers",
-      },
-      {
-        title: "Customers",
-        path: "/master/customers",
-      },
-      {
-        title: "Warehouses",
-        path: "/master/warehouses",
-      },
-      {
-        title: "Salespersons",
-        path: "/master/salespersons",
-      },
-    ],
-  },
-
   // 5. Inventory
   {
     title: "Inventory",
     icon: Package,
     children: [
+      {
+        title: "Stock Overview",
+        path: "/inventory/overview",
+      },
+      {
+        title: "Inventory Monitoring",
+        path: "/inventory/monitoring",
+      },
       {
         title: "Inventory Batches",
         path: "/inventory/batches",
@@ -175,6 +155,34 @@ export const sidebarMenu = [
       {
         title: "Balance Sheet",
         path: "/accounting/balance-sheet",
+      },
+    ],
+  },
+
+  // 4. Master Data
+  {
+    title: "Master Data",
+    icon: Database,
+    children: [
+      {
+        title: "Products",
+        path: "/master/products",
+      },
+      {
+        title: "Suppliers",
+        path: "/master/suppliers",
+      },
+      {
+        title: "Customers",
+        path: "/master/customers",
+      },
+      {
+        title: "Warehouses",
+        path: "/master/warehouses",
+      },
+      {
+        title: "Salespersons",
+        path: "/master/salespersons",
       },
     ],
   },

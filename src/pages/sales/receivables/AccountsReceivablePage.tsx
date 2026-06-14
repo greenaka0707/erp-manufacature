@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import PageHeader from "@/components/cards/PageHeader";
@@ -37,37 +37,48 @@ export default function AccountsReceivablePage() {
     return sum + paid;
   }, 0);
 
-  const filteredInvoices = invoices.filter((invoice) => {
-    const keyword = search.toLowerCase();
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter((invoice) => {
+      const keyword = search.toLowerCase();
 
-    const invoiceNumber = invoice.invoice_number?.toLowerCase() || "";
-    const customerName = invoice.customer?.name?.toLowerCase() || "";
+      const invoiceNumber = invoice.invoice_number?.toLowerCase() || "";
 
-    return invoiceNumber.includes(keyword) || customerName.includes(keyword);
-  });
+      const customerName = invoice.customer?.name?.toLowerCase() || "";
 
+      const paid = invoice.allocations?.reduce((sum: number, item: any) => sum + Number(item.allocated_amount || 0), 0) || 0;
+
+      const outstanding = Number(invoice.grand_total || 0) - paid;
+
+      const matchSearch = invoiceNumber.includes(keyword) || customerName.includes(keyword);
+
+      const matchStatus = filter === "ALL" ? true : filter === "PAID" ? outstanding <= 0 : outstanding > 0;
+
+      return matchSearch && matchStatus;
+    });
+  }, [invoices, search, filter]);
   useEffect(() => {
     if (companyId) {
       loadData();
     } else {
       setLoading(false);
     }
-  }, [companyId, filter]);
+  }, [companyId]);
 
   async function loadData() {
+    console.log("LOAD DATA DIPANGGIL");
+
     try {
       setLoading(true);
 
-      const data = await getAccountsReceivable(companyId!, filter);
+      const data = await getAccountsReceivable(companyId!);
 
-      // TAMBAHKAN BARIS INI UNTUK INSPEKSI DATA
+      console.log("DATA:", data);
 
       setInvoices(data);
     } finally {
       setLoading(false);
     }
   }
-
   function handleExportPdf() {
     exportAccountsReceivablePdf(filteredInvoices);
   }

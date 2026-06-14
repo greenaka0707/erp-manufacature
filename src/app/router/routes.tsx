@@ -35,6 +35,9 @@ import InventoryBatchesPage from "@/pages/inventory/InventoryBatchesPage";
 import InventoryBatchDetailPage from "@/pages/inventory/InventoryBatchDetailPage";
 import StockMovementsPage from "@/pages/inventory/StockMovementsPage";
 import InventoryLedgerPage from "@/pages/inventory/InventoryLedgerPage";
+import StockOverviewPage from "@/pages/inventory/StockOverviewPage";
+import ProductStockDetailPage from "@/pages/inventory/ProductStockDetailPage";
+import InventoryMonitoringPage from "@/pages/inventory/InventoryMonitoringPage";
 
 import AdjustmentsPage from "@/pages/adjustments/AdjustmentsPage";
 import AdjustmentFormPage from "@/pages/adjustments/AdjustmentFormPage";
@@ -238,6 +241,21 @@ export const routes: RouteObject[] = [
       {
         path: "inventory/transfers/:id",
         element: <TransferDetailPage />,
+      },
+
+      {
+        path: "/inventory/overview",
+        element: <StockOverviewPage />,
+      },
+
+      {
+        path: "/inventory/products/:id",
+        element: <ProductStockDetailPage />,
+      },
+
+      {
+        path: "/inventory/monitoring",
+        element: <InventoryMonitoringPage />,
       },
 
       // Production

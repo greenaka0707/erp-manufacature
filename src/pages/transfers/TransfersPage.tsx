@@ -66,10 +66,18 @@ export default function TransfersPage() {
               transfers.map((t) => (
                 <tr key={t.id} className="border-b hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/inventory/transfers/${t.id}`)}>
                   <td className="p-4">{t.transfer_number}</td>
-                  <td className="p-4">{t.transfer_date}</td>
+                  <td className="p-4">{new Date(t.transfer_date).toLocaleDateString("id-ID")}</td>
                   <td className="p-4">{t.from_warehouse?.name}</td>
                   <td className="p-4">{t.to_warehouse?.name}</td>
-                  <td className="p-4">{t.status}</td>
+                  <td className="p-4">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        t.status === "DRAFT" ? "bg-gray-100 text-gray-700" : t.status === "IN_TRANSIT" ? "bg-blue-100 text-blue-700" : t.status === "RECEIVED" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {t.status}
+                    </span>
+                  </td>
                 </tr>
               ))
             )}

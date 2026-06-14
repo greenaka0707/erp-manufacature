@@ -7,7 +7,8 @@ import Loading from "@/components/ui/loading";
 import { useCompanyStore } from "@/stores/companyStore";
 import { createTransfer } from "@/services/transfer.service";
 import { getWarehouses } from "@/services/warehouse.service";
-import { getInventoryBatches } from "@/services/inventory-batch.service";
+
+import { getAvailableBatchesByWarehouse } from "@/services/inventory-batch.service";
 
 export default function TransferFormPage() {
   const companyId = useCompanyStore((state) => state.currentCompany?.id);
@@ -31,15 +32,20 @@ export default function TransferFormPage() {
     if (companyId) loadData();
   }, [companyId]);
 
+  useEffect(() => {
+    if (companyId && header.from_warehouse_id) {
+      loadBatches();
+    }
+  }, [companyId, header.from_warehouse_id]);
+
   async function loadData() {
     if (!companyId) return;
 
     setLoading(true);
     try {
       const wh = await getWarehouses(companyId);
-      const bt = await getInventoryBatches(companyId);
+
       setWarehouses(wh || []);
-      setBatches(bt || []);
     } catch (error) {
       console.error("Failed to load warehouses or batches:", error);
     } finally {
@@ -59,7 +65,23 @@ export default function TransferFormPage() {
     setItems(copy);
   }
 
+  async function loadBatches() {
+    if (!companyId) return;
+
+    const data = await getAvailableBatchesByWarehouse(companyId, header.from_warehouse_id);
+
+    console.log("WAREHOUSE", header.from_warehouse_id);
+    console.log("BATCHES", data);
+
+    setBatches(data || []);
+  }
+
   async function handleSave() {
+    if (batches.length === 0) {
+      alert("Warehouse asal tidak memiliki stock yang dapat ditransfer");
+
+      return;
+    }
     if (!companyId) {
       alert("Company tidak ditemukan");
       return;
@@ -124,6 +146,8 @@ export default function TransferFormPage() {
 
   if (loading) return <Loading />;
 
+  const isInvalidTransfer = !header.from_warehouse_id || !header.to_warehouse_id || header.from_warehouse_id === header.to_warehouse_id;
+
   return (
     <div className="space-y-6">
       <PageHeader title="Create Transfer" description="Create stock transfer between warehouses" />
@@ -131,9 +155,20 @@ export default function TransferFormPage() {
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <label>From Warehouse</label>
-          <select value={header.from_warehouse_id} onChange={(e) => setHeader({ ...header, from_warehouse_id: e.target.value })} className="w-full rounded-lg border p-2">
+          <select
+            value={header.from_warehouse_id}
+            onChange={(e) => {
+              setHeader({
+                ...header,
+                from_warehouse_id: e.target.value,
+              });
+
+              setItems([]);
+            }}
+            className="w-full rounded-lg border p-2"
+          >
             <option value="">Select Warehouse</option>
-            {availableTargetWarehouses.map((wh) => (
+            {warehouses.map((wh) => (
               <option key={wh.id} value={wh.id}>
                 {wh.name}
               </option>
@@ -164,6 +199,21 @@ export default function TransferFormPage() {
       </div>
 
       <div>
+        <div>
+          <label>Notes</label>
+
+          <textarea
+            value={header.notes}
+            onChange={(e) =>
+              setHeader({
+                ...header,
+                notes: e.target.value,
+              })
+            }
+            className="w-full rounded-lg border p-2"
+            rows={3}
+          />
+        </div>
         <h3>Transfer Items</h3>
         {items.map((item, index) => (
           <div key={index} className="flex gap-2 mb-2">
@@ -180,7 +230,7 @@ export default function TransferFormPage() {
               <option value="">Select Batch</option>
               {batches.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.batch_number}
+                  {b.batch_number} - {b.products?.name}
                 </option>
               ))}
             </select>
@@ -210,7 +260,13 @@ export default function TransferFormPage() {
         <button onClick={() => navigate("/inventory/transfers")} className="rounded-lg border px-4 py-2">
           Cancel
         </button>
-        <button disabled={warehouses.length < 2} onClick={handleSave} className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-50">
+
+        <button
+          title={header.from_warehouse_id === header.to_warehouse_id ? "Warehouse asal dan tujuan tidak boleh sama" : ""}
+          disabled={warehouses.length < 2 || isInvalidTransfer}
+          onClick={handleSave}
+          className="rounded-lg bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-50"
+        >
           Save Transfer
         </button>
       </div>

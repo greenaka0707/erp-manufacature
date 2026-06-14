@@ -50,3 +50,26 @@ export async function getInventoryBatchById(companyId: string, batchId: string) 
 
   return data;
 }
+
+export async function getAvailableBatchesByWarehouse(companyId: string, warehouseId: string) {
+  const { data, error } = await supabase
+    .from("inventory_batches")
+    .select(
+      `
+      *,
+      products(
+        id,
+        sku,
+        name
+      )
+    `,
+    )
+    .eq("company_id", companyId)
+    .eq("warehouse_id", warehouseId)
+    .gt("remaining_qty", 0)
+    .order("batch_number");
+
+  if (error) throw error;
+
+  return data;
+}
