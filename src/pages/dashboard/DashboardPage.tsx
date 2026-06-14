@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, ArrowDownRight, Search, Filter, Plus, DollarSign, ShoppingBag, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { ArrowUpRight, Search, Filter, Plus, DollarSign, ShoppingBag, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 
 // Base Components
 import Loading from "@/components/ui/loading";
